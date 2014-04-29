@@ -7,6 +7,7 @@ import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 import org.wintrisstech.sensors.UltraSonicSensors;
 import android.os.SystemClock;
+import android.provider.Settings.System;
 
 /**
  * A Lada is an implementation of the IRobotCreateInterface, inspired by Vic's
@@ -48,26 +49,27 @@ public class Lada extends IRobotCreateAdapter {
 	 * @throws ConnectionLostException
 	 */
 	public void loop() throws ConnectionLostException {
-		try {
-			sonar.read();
-		} catch (InterruptedException ex) {
-		}
-		dashboard.log("L: " + sonar.getLeftDistance() + " F: "
-				+ sonar.getFrontDistance() + " R: " + sonar.getRightDistance());
-		SystemClock.sleep(100);
-		if (sonar.getLeftDistance() < 20) {
-			driveDirect(0, 100);
-			SystemClock.sleep(1000);
-		}
-		if (sonar.getRightDistance() < 20) {
-			driveDirect(100, 0);
-			SystemClock.sleep(1000);
-		}
-		if (sonar.getFrontDistance() < 20) {
-			driveDirect(-500, -500);
-			SystemClock.sleep(1000);
-		}
-		
+		go(100,100);
+		go(1000);
+		stop();
+		SystemClock.sleep(5000);
+	}
+
+	public void go(int leftWheelSpeed, int rightWheelSpeed)
+			throws ConnectionLostException {
+		driveDirect(rightWheelSpeed, leftWheelSpeed);
+	}
+
+	public void stop() throws ConnectionLostException {
 		driveDirect(0, 0);
+	}
+
+	public void go(int distanceToTravel) throws ConnectionLostException {
+		int totalDistance = 0;
+		while (distanceToTravel > totalDistance) {
+			readSensors(SENSORS_DISTANCE);
+			totalDistance += getDistance();
+			dashboard.log(totalDistance + "");
+		}
 	}
 }
