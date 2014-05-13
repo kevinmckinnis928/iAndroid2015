@@ -1,13 +1,11 @@
 package org.wintrisstech.erik.iaroc;
 
-/**************************************************************************
- * Happy version...ultrasonics working...Version 140427A...mods by Vic
- **************************************************************************/
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
+
 import org.wintrisstech.sensors.UltraSonicSensors;
+
 import android.os.SystemClock;
-import android.provider.Settings.System;
 
 /**
  * A Lada is an implementation of the IRobotCreateInterface, inspired by Vic's
@@ -18,6 +16,9 @@ import android.provider.Settings.System;
 public class Lada extends IRobotCreateAdapter {
 	private final Dashboard dashboard;
 	public UltraSonicSensors sonar;
+	private boolean firstPass = true;;
+	private int commandAzimuth;
+	private int initialHeading;
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -36,11 +37,11 @@ public class Lada extends IRobotCreateAdapter {
 		super(create);
 		sonar = new UltraSonicSensors(ioio);
 		this.dashboard = dashboard;
-		// song(0, new int[]{58, 10});
 	}
 
 	public void initialize() throws ConnectionLostException {
-		dashboard.log("iAndroid2014 happy version 140427A");
+		dashboard.log("iAndroid2014 happy version 140509A");
+		 initialHeading = readCompass();
 	}
 
 	/**
@@ -49,27 +50,43 @@ public class Lada extends IRobotCreateAdapter {
 	 * @throws ConnectionLostException
 	 */
 	public void loop() throws ConnectionLostException {
-		go(100,100);
-		go(1000);
-		stop();
-		SystemClock.sleep(5000);
-	}
 
-	public void go(int leftWheelSpeed, int rightWheelSpeed)
-			throws ConnectionLostException {
-		driveDirect(rightWheelSpeed, leftWheelSpeed);
-	}
-
-	public void stop() throws ConnectionLostException {
-		driveDirect(0, 0);
-	}
-
-	public void go(int distanceToTravel) throws ConnectionLostException {
-		int totalDistance = 0;
-		while (distanceToTravel > totalDistance) {
-			readSensors(SENSORS_DISTANCE);
-			totalDistance += getDistance();
-			dashboard.log(totalDistance + "");
+		SystemClock.sleep(100);
+		dashboard.log(String.valueOf(readCompass()));
+		if (initialHeading > readCompass()) {
+			driveDirect(100, 120);
 		}
+		if (initialHeading < readCompass()) {
+			driveDirect(120, 100);
+		}
+	}
+
+	public void turn(int commandAngle) throws ConnectionLostException // Doesn't
+																		// work
+																		// for
+																		// turns
+																		// through
+																		// 360
+	{
+		int startAzimuth = 0;
+		if (firstPass) {
+			startAzimuth += readCompass();
+			commandAzimuth = (startAzimuth + commandAngle) % 360;
+			dashboard.log("commandaz = " + commandAzimuth + " startaz = "
+					+ startAzimuth);
+			firstPass = false;
+		}
+		int currentAzimuth = readCompass();
+		dashboard.log("now = " + currentAzimuth);
+		if (currentAzimuth >= commandAzimuth) {
+			driveDirect(0, 0);
+			firstPass = true;
+			dashboard.log("finalaz = " + readCompass());
+		}
+	}
+
+	public int readCompass() {
+		return (int) (dashboard.getAzimuth() + 360) % 360;
+
 	}
 }
