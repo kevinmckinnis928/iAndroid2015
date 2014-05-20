@@ -51,6 +51,7 @@ public class Lada extends IRobotCreateAdapter {
 		 initialHeading = readCompass();
 	}
 
+	
 	/**
 	 * This method is called repeatedly
 	 * 
