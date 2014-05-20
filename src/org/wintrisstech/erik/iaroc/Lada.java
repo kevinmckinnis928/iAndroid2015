@@ -3,6 +3,9 @@ package org.wintrisstech.erik.iaroc;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.wintrisstech.sensors.UltraSonicSensors;
 
 import android.os.SystemClock;
@@ -19,6 +22,10 @@ public class Lada extends IRobotCreateAdapter {
 	private boolean firstPass = true;;
 	private int commandAzimuth;
 	private int initialHeading;
+	private static final int FASTWHEEL = 500;
+	private static final int SLOWWHEEL = FASTWHEEL - 10;
+	private int counter = 0;
+	private List<Integer> averageCompassReading = new ArrayList<Integer>();
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -52,12 +59,20 @@ public class Lada extends IRobotCreateAdapter {
 	public void loop() throws ConnectionLostException {
 
 		SystemClock.sleep(100);
-		dashboard.log(String.valueOf(readCompass()));
+		String compassReading = String.valueOf(readCompass());
+		dashboard.log(compassReading);
+		while(counter<5){
+			averageCompassReading.add(readCompass());
+		}
+		raceInAStraightLine();
+	}
+
+	private void raceInAStraightLine() throws ConnectionLostException {
 		if (initialHeading > readCompass()) {
-			driveDirect(100, 120);
+			driveDirect(FASTWHEEL, SLOWWHEEL);
 		}
 		if (initialHeading < readCompass()) {
-			driveDirect(120, 100);
+			driveDirect(SLOWWHEEL, FASTWHEEL);
 		}
 	}
 
