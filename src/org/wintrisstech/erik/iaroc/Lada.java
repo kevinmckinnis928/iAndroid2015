@@ -22,10 +22,11 @@ public class Lada extends IRobotCreateAdapter {
 	private boolean firstPass = true;;
 	private int commandAzimuth;
 	private int initialHeading;
-	private static final int FASTWHEEL = 500;
+	private static final int FASTWHEEL = 200;
 	private static final int SLOWWHEEL = FASTWHEEL - 10;
 	private int counter = 0;
 	private List<Integer> averageCompassReading = new ArrayList<Integer>();
+	private float averageReading = 50;
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -49,6 +50,13 @@ public class Lada extends IRobotCreateAdapter {
 	public void initialize() throws ConnectionLostException {
 		dashboard.log("iAndroid2014 happy version 140509A");
 		 initialHeading = readCompass();
+		 //driveDirect(100, 100);
+	}
+	public void averageList(){
+		for (int i = 0; i < 5; i++) {
+			averageReading += averageCompassReading.get(i);
+		}
+		averageReading = averageReading/5;
 	}
 
 	
@@ -58,21 +66,41 @@ public class Lada extends IRobotCreateAdapter {
 	 * @throws ConnectionLostException
 	 */
 	public void loop() throws ConnectionLostException {
-
+		
 		SystemClock.sleep(100);
-		String compassReading = String.valueOf(readCompass());
-		dashboard.log(compassReading);
-		while(counter<5){
-			averageCompassReading.add(readCompass());
+		int compassReading = readCompass();
+		dashboard.log(compassReading + "");
+		if (compassReading == averageReading) {
+			driveDirect(FASTWHEEL, FASTWHEEL);
 		}
-		raceInAStraightLine();
-	}
-
-	private void raceInAStraightLine() throws ConnectionLostException {
-		if (initialHeading > readCompass()) {
+		else if (compassReading > averageReading) {
 			driveDirect(FASTWHEEL, SLOWWHEEL);
 		}
-		if (initialHeading < readCompass()) {
+		else if (compassReading < averageReading) {
+			driveDirect(SLOWWHEEL, FASTWHEEL);
+		}
+		/*if(counter < 5) {
+			dashboard.log("counter: " + counter);
+			averageCompassReading.add(readCompass());
+			counter++;
+		}
+		if(counter == 5) {
+			//averageList();
+			raceInAStraightLine(readCompass());
+		}
+		*/
+		
+		
+	}
+
+	private void raceInAStraightLine(int compassReading) throws ConnectionLostException {
+		if (compassReading == averageReading) {
+			driveDirect(FASTWHEEL, FASTWHEEL);
+		}
+		else if (compassReading > averageReading) {
+			driveDirect(FASTWHEEL, SLOWWHEEL);
+		}
+		else if (compassReading < averageReading) {
 			driveDirect(SLOWWHEEL, FASTWHEEL);
 		}
 	}
