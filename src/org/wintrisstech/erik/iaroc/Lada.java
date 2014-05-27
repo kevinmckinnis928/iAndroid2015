@@ -42,7 +42,7 @@ public class Lada extends IRobotCreateAdapter {
 		
 		this.dashboard = dashboard;
 		
-		this.api = new RobotHelper(create);
+		this.api = new RobotHelperImpl(create);
 	}
 
 	public void initialize() throws ConnectionLostException {
