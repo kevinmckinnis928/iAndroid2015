@@ -16,10 +16,11 @@ import android.os.SystemClock;
 public class Lada extends IRobotCreateAdapter {
 	private final Dashboard dashboard;
 	public UltraSonicSensors sonar;
-	private boolean firstPass = true;;
+	private boolean firstPass = true;
 	private int commandAzimuth;
-	//private int initialHeading;
+	// private int initialHeading;
 	private RobotHelper api;
+	private int counter = 1;
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -35,63 +36,54 @@ public class Lada extends IRobotCreateAdapter {
 	 */
 	public Lada(IOIO ioio, IRobotCreateInterface create, Dashboard dashboard)
 			throws ConnectionLostException {
-		
+
 		super(create);
-		
+
 		sonar = new UltraSonicSensors(ioio);
-		
+
 		this.dashboard = dashboard;
-		
+
 		this.api = new RobotHelperImpl(create);
 	}
 
 	public void initialize() throws ConnectionLostException {
-		
+
 		dashboard.log("iAndroid2014 happy version 140509A");
-		
-		//initialHeading = readCompass();
+
+		// initialHeading = readCompass();
 	}
-	
+
 	/**
 	 * This method is called repeatedly
 	 * 
 	 * @throws ConnectionLostException
+	 * @throws InterruptedException 
 	 */
-	
-	public void loop() throws ConnectionLostException {
-		
+
+	public void loop() throws ConnectionLostException, InterruptedException {
+
 		SystemClock.sleep(100);
-		
+
 		int compassReading = readCompass();
-		
+
 		dashboard.log(compassReading + "");
-		
-		if(api.getCounter() < RobotHelperConstants.NUMBER_OF_READINGS_TO_AVERAGE) {
-			
-			dashboard.log("counter: " + api.getCounter());
-			
-			api.addAverageCompassReading(readCompass());
-			
-			api.incrementCounter();
-		}
-		
-		if(api.getCounter() == RobotHelperConstants.NUMBER_OF_READINGS_TO_AVERAGE) {
-			
-			api.averageList();
-			
-			api.incrementCounter();
+
+		if (counter == 1) {
+			api.setAverageReading(compassReading);
+			counter++;
 		} else {
-			
-			api.raceInAStraightLine(readCompass());
+			api.raceInAStraightLine(compassReading);
 		}
-		
-		
-		
+		sonar.read();
+		dashboard.log(" right " + sonar.getRightDistance() + " left " + sonar.getLeftDistance());
+		if(sonar.getRightDistance() < 40){
+			api.setAverageReading(api.getAverageReading() - 100);
+		}
+
 	}
 
-
 	public void turn(int commandAngle) throws ConnectionLostException {
-	// Doesn't work for turns through 360
+		// Doesn't work for turns through 360
 		int startAzimuth = 0;
 		if (firstPass) {
 			startAzimuth += readCompass();
