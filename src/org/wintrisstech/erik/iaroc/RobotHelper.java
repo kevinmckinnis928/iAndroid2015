@@ -33,4 +33,6 @@ public interface RobotHelper {
 
 	public abstract void incrementCounter();
 
+	public abstract void spinAround() throws ConnectionLostException;
+
 }

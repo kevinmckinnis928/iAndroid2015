@@ -3,6 +3,8 @@ package org.wintrisstech.erik.iaroc;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 
+import java.util.Random;
+
 import org.wintrisstech.sensors.UltraSonicSensors;
 
 import android.os.SystemClock;
@@ -19,7 +21,7 @@ public class Lada extends IRobotCreateAdapter {
 	private boolean firstPass = true;
 	private int commandAzimuth;
 	// private int initialHeading;
-	private RobotHelper api;
+	private RobotHelperImpl api;
 	private int counter = 1;
 
 	/**
@@ -43,7 +45,7 @@ public class Lada extends IRobotCreateAdapter {
 
 		this.dashboard = dashboard;
 
-		this.api = new RobotHelperImpl(create);
+		this.api = new RobotHelperImpl(dashboard, create);
 	}
 
 	public void initialize() throws ConnectionLostException {
@@ -67,8 +69,9 @@ public class Lada extends IRobotCreateAdapter {
 		int compassReading = readCompass();
 
 		dashboard.log(compassReading + "");
-
-		if (counter == 1) {
+		
+		api.spinTimer();
+		/*if (counter == 1) {
 			api.setAverageReading(compassReading);
 			counter++;
 		} else {
@@ -79,7 +82,7 @@ public class Lada extends IRobotCreateAdapter {
 		if(sonar.getRightDistance() < 40){
 			api.setAverageReading(api.getAverageReading() - 100);
 		}
-
+*/
 	}
 
 	public void turn(int commandAngle) throws ConnectionLostException {

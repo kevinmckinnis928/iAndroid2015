@@ -4,46 +4,59 @@ import ioio.lib.api.exception.ConnectionLostException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-public class RobotHelperImpl implements RobotHelper {
+import android.os.SystemClock;
+
+public class RobotHelperImpl {
 
 	private int counter;
 	private final List<Integer> firstFiveCompassReading;
 	private float averageReading;
-	//private final Dashboard dashboard;
+	private final Dashboard dashboard;
 	private final IRobotCreateInterface create;
 	
 	public RobotHelperImpl(
-			//Dashboard dashboard, 
+			Dashboard dashboard, 
 			IRobotCreateInterface create) {
 		
 		firstFiveCompassReading = new ArrayList<Integer>();
 		counter = 0;
-		//this.dashboard = dashboard;
+		this.dashboard = dashboard;
 		this.create = create;
 	}
+	public void spinAround(int spinTime) throws ConnectionLostException {
+		spinTime = Math.abs(spinTime);
+		create.driveDirect(400, -400);
+		dashboard.log("spinTime " + spinTime);
+		SystemClock.sleep(spinTime * 1000);
+		dashboard.log("finished sleeping");
+		create.driveDirect(100, 100);
+	}
+	public int getRandomNumber(int range){
+		return new Random().nextInt(range);
+	}
 	
-	@Override
+	
 	public void findTheBeacon() {
 		//TODO Create method
 	}
 	
-	@Override
 	public void stop() {
 		//TODO Create method
 	}
 	
-	@Override
+	
 	public void goDistance(int distance) {
 		//TODO Create method
 	}
 	
-	@Override
+	
 	public void goDistanceFromWall(int distanceFromWall) {
 		//TODO Create method
 	}
 	
-	@Override
+	
 	public void averageList() {
 		
 		for (int i = 0; i < RobotHelperConstants.NUMBER_OF_READINGS_TO_AVERAGE; i++) {
@@ -54,7 +67,7 @@ public class RobotHelperImpl implements RobotHelper {
 		averageReading = averageReading / RobotHelperConstants.NUMBER_OF_READINGS_TO_AVERAGE;
 	}
 	
-	@Override
+	
 	public void raceInAStraightLine(int compassReading) throws ConnectionLostException {
 		
 		if (compassReading == averageReading) {
@@ -71,46 +84,53 @@ public class RobotHelperImpl implements RobotHelper {
 		}
 	}
 	
-	@Override
+	
 	public void addAverageCompassReading(int reading) {
 		
 		this.firstFiveCompassReading.add(reading);
 	}
 	
-	@Override
+	
 	public int getCounter() {
 		
 		return counter;
 	}
-	@Override
+	
 	public void setCounter(int counter) {
 		
 		this.counter = counter;
 	}
 	
-	@Override
+	
 	public List<Integer> getAverageCompassReading() {
 		
 		return firstFiveCompassReading;
 	}
 	
-	@Override
+	
 	public float getAverageReading() {
 		
 		return averageReading;
 	}
 	
-	@Override
+	
 	public void setAverageReading(float averageReading) {
 		
 		this.averageReading = averageReading;
 	}
 
-	@Override
+	
 	public void incrementCounter() {
 		
 		counter++;
 	}
 
-	
+	public void	spinTimer() throws ConnectionLostException, InterruptedException {
+		int r = getRandomNumber(6) - 3;
+		spinAround(r);
+		Thread.sleep(3000);
+		
+	}
+
 }
+
