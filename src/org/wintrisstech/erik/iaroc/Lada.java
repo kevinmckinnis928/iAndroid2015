@@ -70,7 +70,12 @@ public class Lada extends IRobotCreateAdapter {
 
 		dashboard.log(compassReading + "");
 		
-		api.spinTimer();
+		//api.raceInAStraightLine(compassReading);
+		sonar.read();
+	//dashboard.log("FRONT DISTANCE " + sonar.getFrontDistance());
+	dashboard.log("LEFT DISTANCE " +sonar.getLeftDistance());
+	dashboard.log("RIGHT DISTANCE " + sonar.getRightDistance());
+	Thread.sleep(500);
 		/*if (counter == 1) {
 			api.setAverageReading(compassReading);
 			counter++;

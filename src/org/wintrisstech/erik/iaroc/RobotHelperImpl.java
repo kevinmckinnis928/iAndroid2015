@@ -68,7 +68,9 @@ public class RobotHelperImpl {
 	}
 	
 	
-	public void raceInAStraightLine(int compassReading) throws ConnectionLostException {
+	public void raceInAStraightLine(int compassReading) throws ConnectionLostException, InterruptedException {
+		
+		
 		
 		if (compassReading == averageReading) {
 			
@@ -82,6 +84,8 @@ public class RobotHelperImpl {
 			
 			create.driveDirect(RobotHelperConstants.SLOWWHEEL, RobotHelperConstants.FASTWHEEL);
 		}
+		
+		bumpCheck();
 	}
 	
 	
@@ -128,9 +132,40 @@ public class RobotHelperImpl {
 	public void	spinTimer() throws ConnectionLostException, InterruptedException {
 		int r = getRandomNumber(6) - 3;
 		spinAround(r);
-		Thread.sleep(3000);
+		
 		
 	}
+	
+	
+	//BUMP SENSOR CHECK
+	public void bumpCheck() throws ConnectionLostException, InterruptedException{
+		create.readSensors(create.SENSORS_BUMPS_AND_WHEEL_DROPS);
+		if (create.isBumpRight() && create.isBumpLeft()) {
+			dashboard.log("BOTH BUMPERS");
+			create.driveDirect(-100, -100);
+			Thread.sleep(1000);
+			spinTimer();
+		}
+		else if (create.isBumpRight()) {
+			dashboard.log("RIGHT BUMPER");
+			create.driveDirect(-100, -100);
+			Thread.sleep(1000);
+			spinTimer();
+		}
+		
+		else if (create.isBumpLeft()) {
+			dashboard.log("LEFT BUMPER");
+			create.driveDirect(-100, -100);
+			Thread.sleep(1000);
+			spinTimer();
+		}
+	}
 
+	//IR SENSOR CHECK
+	 public void iRSensor() throws ConnectionLostException{
+		 create.readSensors(create.SENSORS_INFRARED_BYTE);
+		 int ir = create.getInfraredByte();
+		 dashboard.log("IR SENSOR " + ir);
+	 }
 }
 
