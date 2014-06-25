@@ -1,10 +1,12 @@
 package org.wintrisstech.erik.iaroc;
 
 import ioio.lib.api.exception.ConnectionLostException;
-
+import ioio.lib.api.IOIO;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import org.wintrisstech.sensors.UltraSonicSensors;
 
 import android.os.SystemClock;
 
@@ -15,6 +17,9 @@ public class RobotHelperImpl {
 	private float averageReading;
 	private final Dashboard dashboard;
 	private final IRobotCreateInterface create;
+	private boolean firstPass = true;
+	private int commandAzimuth;
+	private int initialHeading;
 	
 	public RobotHelperImpl(
 			Dashboard dashboard, 
@@ -25,6 +30,9 @@ public class RobotHelperImpl {
 		this.dashboard = dashboard;
 		this.create = create;
 	}
+	public void setInitialHeading(int initialHeading){
+		this.initialHeading = initialHeading;
+	}
 	public void spinAround(int spinTime) throws ConnectionLostException {
 		spinTime = Math.abs(spinTime);
 		create.driveDirect(400, -400);
@@ -32,6 +40,8 @@ public class RobotHelperImpl {
 		SystemClock.sleep(spinTime * 1000);
 		dashboard.log("finished sleeping");
 		create.driveDirect(100, 100);
+		
+		
 	}
 	public int getRandomNumber(int range){
 		return new Random().nextInt(range);
@@ -68,25 +78,6 @@ public class RobotHelperImpl {
 	}
 	
 	
-	public void raceInAStraightLine(int compassReading) throws ConnectionLostException, InterruptedException {
-		
-		
-		
-		if (compassReading == averageReading) {
-			
-			create.driveDirect(RobotHelperConstants.FASTWHEEL, RobotHelperConstants.FASTWHEEL);
-		}
-		else if (compassReading > averageReading) {
-			
-			create.driveDirect(RobotHelperConstants.FASTWHEEL, RobotHelperConstants.SLOWWHEEL);
-		}
-		else if (compassReading < averageReading) {
-			
-			create.driveDirect(RobotHelperConstants.SLOWWHEEL, RobotHelperConstants.FASTWHEEL);
-		}
-		
-		bumpCheck();
-	}
 	
 	
 	public void addAverageCompassReading(int reading) {
@@ -135,12 +126,58 @@ public class RobotHelperImpl {
 		
 		
 	}
+	public void basicturn(int rightWheel, int leftWheel) throws ConnectionLostException{
+		create.driveDirect(rightWheel, leftWheel);
+		SystemClock.sleep(250);
+	}
 	
+	
+	public void turn(int commandAngle) throws ConnectionLostException {
+		// Doesn't work for turns through 360
+		int startAzimuth = 0;
+		if (firstPass) {
+			startAzimuth += readCompass();
+			commandAzimuth = (startAzimuth + commandAngle) % 360;
+			dashboard.log("commandaz = " + commandAzimuth + " startaz = "
+					+ startAzimuth);
+			firstPass = false;
+		}
+		int currentAzimuth = readCompass();
+		dashboard.log("now = " + currentAzimuth);
+		if (currentAzimuth >= commandAzimuth) {
+			create.driveDirect(0,0);
+			firstPass = true;
+			dashboard.log("finalaz = " + readCompass());
+		}
+	}
 	
 	//BUMP SENSOR CHECK
-	public void bumpCheck() throws ConnectionLostException, InterruptedException{
+	public void bumpCheckStraight() throws ConnectionLostException, InterruptedException{
 		create.readSensors(create.SENSORS_BUMPS_AND_WHEEL_DROPS);
-		if (create.isBumpRight() && create.isBumpLeft()) {
+		if (create.isBumpLeft() && create.isBumpRight()) {
+			dashboard.log("BOTH BUMPERS");
+			create.driveDirect(-100, -100);
+			Thread.sleep(1000);
+			basicturn(100,-100);//turn left
+		}
+		if (create.isBumpRight() && !create.isBumpLeft()) {
+			dashboard.log("RIGHT BUMPER");
+			create.driveDirect(-100, -100);
+			Thread.sleep(1000);
+			basicturn(100,-100);//turn left
+		}
+		
+		if(create.isBumpLeft() && !create.isBumpRight()) {
+			dashboard.log("LEFT BUMPER");
+			create.driveDirect(-100, -100);
+			Thread.sleep(1000);
+			basicturn(-100,100);
+		}
+	}
+	
+	public void bumpCheckGoldRush() throws ConnectionLostException, InterruptedException{
+		create.readSensors(create.SENSORS_BUMPS_AND_WHEEL_DROPS);
+		if (create.isBumpRight() && create.isBumpLeft()) {//front
 			dashboard.log("BOTH BUMPERS");
 			create.driveDirect(-100, -100);
 			Thread.sleep(1000);
@@ -167,5 +204,17 @@ public class RobotHelperImpl {
 		 int ir = create.getInfraredByte();
 		 dashboard.log("IR SENSOR " + ir);
 	 }
+	 public int readCompass() {
+			return (int) (dashboard.getAzimuth() + 360) % 360;
+
+		}
+	 /*public void filteredReading() throws ConnectionLostException
+	 {int count = 0;
+	 	int rightAverage = 0;
+	 	int leftAverage = 0;
+		 for (int i = 0; i < 5 ; i++) {
+
+			 		}
+	 }*/
 }
 
