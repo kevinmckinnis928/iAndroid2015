@@ -105,6 +105,7 @@ public void raceInAStraightLine(int compassReading) throws ConnectionLostExcepti
 		  }
 		  dashboard.log("initialHeading = " + initialHeading );
 		  
+		  demo(1);
 	}
 
 	/**
@@ -116,7 +117,7 @@ public void raceInAStraightLine(int compassReading) throws ConnectionLostExcepti
 
 	public void loop() throws ConnectionLostException, InterruptedException {
 		//dragRace();
-		maze(RIGHT);
+		//maze(RIGHT);
 		
 		//sonar.read();
 	//dashboard.log("FRONT DISTANCE " + sonar.getFrontDistance());

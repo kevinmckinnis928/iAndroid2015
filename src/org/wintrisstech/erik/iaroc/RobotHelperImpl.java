@@ -177,21 +177,8 @@ public class RobotHelperImpl {
 	
 	public void bumpCheckGoldRush() throws ConnectionLostException, InterruptedException{
 		create.readSensors(create.SENSORS_BUMPS_AND_WHEEL_DROPS);
-		if (create.isBumpRight() && create.isBumpLeft()) {//front
+		if (create.isBumpRight() || create.isBumpLeft()) {//front
 			dashboard.log("BOTH BUMPERS");
-			create.driveDirect(-100, -100);
-			Thread.sleep(1000);
-			spinTimer();
-		}
-		else if (create.isBumpRight()) {
-			dashboard.log("RIGHT BUMPER");
-			create.driveDirect(-100, -100);
-			Thread.sleep(1000);
-			spinTimer();
-		}
-		
-		else if (create.isBumpLeft()) {
-			dashboard.log("LEFT BUMPER");
 			create.driveDirect(-100, -100);
 			Thread.sleep(1000);
 			spinTimer();
@@ -204,6 +191,7 @@ public class RobotHelperImpl {
 		 int ir = create.getInfraredByte();
 		 dashboard.log("IR SENSOR " + ir);
 	 }
+	 
 	 public int readCompass() {
 			return (int) (dashboard.getAzimuth() + 360) % 360;
 
